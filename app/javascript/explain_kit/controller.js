@@ -153,21 +153,32 @@ export default class extends Controller {
 
   position(trigger) {
     const el = this.popoverTarget
-    el.style.top = el.style.left = ""
+    el.style.top = el.style.left = el.style.maxHeight = ""
     if (!window.matchMedia(DESKTOP).matches) return
 
     const rect = trigger.getBoundingClientRect()
     const width = el.offsetWidth
     const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8)
+    // Below the trigger; above it when there is more room there. Never on top of the trigger:
+    // when neither side fits the popover's full height it shrinks (and scrolls) into the room.
+    const gap = 8
+    const height = el.offsetHeight
+    const roomBelow = window.innerHeight - rect.bottom - gap * 2
+    const roomAbove = rect.top - gap * 2
+    const flip = height > roomBelow && roomAbove > roomBelow
+    const room = flip ? roomAbove : roomBelow
+    const used = Math.min(height, room)
+    if (height > room) el.style.maxHeight = `${Math.max(room, 120)}px`
+    const top = flip ? rect.top - gap - used : rect.bottom + gap
     el.style.left = `${left + window.scrollX}px`
-    el.style.top = `${rect.bottom + window.scrollY + 8}px`
+    el.style.top = `${top + window.scrollY}px`
   }
 
   // --- page help ----------------------------------------------------------
 
   pageKeys() {
     const seen = new Set()
-    document.querySelectorAll("[data-explain-key]").forEach((el) => seen.add(el.dataset.explainKey))
+    document.querySelectorAll("[data-explain-key]:not([data-explain-page='false'])").forEach((el) => seen.add(el.dataset.explainKey))
     return [...seen]
   }
 
@@ -226,18 +237,30 @@ export default class extends Controller {
     const button = document.createElement("button")
     button.type = "button"
     button.className = "explain-list__item"
-    button.dataset.explainJump = key
     button.innerHTML = '<strong class="explain-list__title"></strong><span class="explain-list__short"></span>'
     button.firstChild.textContent = term.title
-    button.lastChild.textContent = term.short
+    // A term whose trigger is not on screen (hidden tab, JS-revealed block) cannot be jumped to:
+    // list it disabled with a hint instead of a dead tap.
+    if (this.visibleTrigger(key)) {
+      button.dataset.explainJump = key
+      button.lastChild.textContent = term.short
+    } else {
+      button.disabled = true
+      button.classList.add("explain-list__item--off")
+      button.lastChild.textContent = this.listTarget.dataset.hiddenHint || term.short
+    }
     li.append(button)
     return li
   }
 
-  jumpTo(key) {
-    const el = [...document.querySelectorAll("[data-explain-key]")]
+  visibleTrigger(key) {
+    return [...document.querySelectorAll("[data-explain-key]")]
       .filter((e) => e.dataset.explainKey === key)
       .find((e) => e.getClientRects().length > 0)
+  }
+
+  jumpTo(key) {
+    const el = this.visibleTrigger(key)
     this.closeAll({ restoreFocus: false })
     if (!el) return
 

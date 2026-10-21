@@ -60,6 +60,11 @@ class HelperTest < Minitest::Test
     assert_includes html, "82"
   end
 
+  def test_chrome_term_opts_out_of_the_page_help
+    assert_includes view.explain_term("spot.score", page: false) { "82" }, 'data-explain-page="false"'
+    refute_includes view.explain_term("spot.score") { "82" }, "data-explain-page"
+  end
+
   def test_icon_trigger_names_the_term
     html = view.explain_term("spot.score", icon: true) { "82" }
     assert_includes html, 'aria-label="What is Score?"'
@@ -75,6 +80,11 @@ class HelperTest < Minitest::Test
     assert_includes html, '"epic"'
   end
 
+  def test_mount_carries_the_hint_for_terms_that_are_not_visible
+    view.explain_term("spot.score") { "1" }
+    assert_includes view.explain_mount, 'data-hidden-hint="Not visible on this page right now"'
+  end
+
   def test_mount_is_empty_without_terms
     assert_nil view.explain_mount
   end
@@ -87,6 +97,12 @@ class HelperTest < Minitest::Test
   def test_preload_embeds_terms_without_markup
     view.explain_preload("spot.tide")
     assert_includes view.explain_mount, "spot.tide"
+  end
+
+  def test_page_help_button_takes_extra_data_for_a_second_entry_point
+    html = view.explain_page_help(data: {action: "click->sheet#close"})
+    assert_includes html, 'data-action="click-&gt;sheet#close"'
+    assert_includes html, "data-explain-page-help"
   end
 
   def test_page_help_button_starts_hidden_with_dot

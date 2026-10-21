@@ -9,8 +9,11 @@ module ExplainKit
     #   explain_term(:score, icon: true) { "82" }     # content stays plain, a small "?" button follows it
     #   explain_term(:score_band, bands: :score)      # popover lists the host's bands for :score
     #
+    # `page: false` marks chrome (nav, global switches): the term still opens its popover, but the
+    # page help does not list it and it does not light the "?" on its own.
+    #
     # Do not nest it inside a link or another button.
-    def explain_term(key, icon: false, bands: nil, class: nil, **html, &block)
+    def explain_term(key, icon: false, bands: nil, page: true, class: nil, **html, &block)
       key = key.to_s
       explain_keys << key
       inner = block ? capture(&block) : I18n.t("#{ExplainKit.config.namespace}.#{key}.title", default: key.humanize)
@@ -18,7 +21,7 @@ module ExplainKit
       extra = binding.local_variable_get(:class)
       trigger = {
         type: "button",
-        data: {explain_key: key, explain_bands: bands}.compact.merge(html.delete(:data) || {}),
+        data: {explain_key: key, explain_bands: bands, explain_page: (page ? nil : "false")}.compact.merge(html.delete(:data) || {}),
         aria: {expanded: "false", controls: POPOVER_ID, haspopup: "dialog"}
       }
 
@@ -39,12 +42,12 @@ module ExplainKit
     end
 
     # The nav "?" button. Hidden until the page carries at least one explain_term.
-    def explain_page_help(class: nil, label: nil, &block)
+    def explain_page_help(class: nil, label: nil, data: {}, &block)
       @_explain_mount_wanted = true
       extra = binding.local_variable_get(:class)
       label ||= I18n.t("explain_kit.ui.page_help")
       tag.button(type: "button", hidden: true, class: ["explain-page-help", extra],
-        data: {explain_page_help: true}, aria: {label: label, expanded: "false", controls: PANEL_ID, haspopup: "dialog"}) do
+        data: {explain_page_help: true}.merge(data), aria: {label: label, expanded: "false", controls: PANEL_ID, haspopup: "dialog"}) do
         safe_join([
           block ? capture(&block) : tag.span("?", "aria-hidden": "true"),
           tag.span("", class: "explain-dot", hidden: true, data: {explain_dot: true}, "aria-hidden": "true")

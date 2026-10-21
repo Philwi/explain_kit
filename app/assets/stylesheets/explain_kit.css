@@ -137,3 +137,5 @@ button.explain-term::after,
 .explain-list__item:hover { background: var(--explain-border); }
 .explain-list__title { display: block; }
 .explain-list__short { display: block; color: var(--explain-muted); font-size: 0.8rem; }
+.explain-list__item--off { cursor: default; opacity: 0.55; }
+.explain-list__item--off:hover { background: none; }

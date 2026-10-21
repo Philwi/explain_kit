@@ -5,8 +5,13 @@ const ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&
 const esc = (value) => String(value).replace(/[&<>"']/g, (c) => ESCAPES[c])
 
 // labelHtml must already be escaped HTML.
-export function explainTriggerHTML(key, labelHtml, { bands } = {}) {
+// `icon: true` keeps the content plain and appends a small "?" button, like explain_term(icon: true);
+// `label` is then the button's accessible name (localised by the host, e.g. "What is Score?").
+export function explainTriggerHTML(key, labelHtml, { bands, icon, label } = {}) {
   const attrs = bands ? ` data-explain-bands="${esc(bands)}"` : ""
+  if (icon) {
+    return `<span class="explain-term explain-term--icon">${labelHtml}<button type="button" class="explain-term__trigger" data-explain-key="${esc(key)}"${attrs} aria-label="${esc(label || "?")}" aria-expanded="false" aria-controls="explain-popover" aria-haspopup="dialog"><span aria-hidden="true">?</span></button></span>`
+  }
   return `<button type="button" class="explain-term explain-term--wrap" data-explain-key="${esc(key)}"${attrs} aria-expanded="false" aria-controls="explain-popover" aria-haspopup="dialog">${labelHtml}</button>`
 }
 

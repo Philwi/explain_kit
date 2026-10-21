@@ -53,8 +53,10 @@ in any required locale, and on `explain_term` keys used in views but absent from
 <%= explain_term("spot.score") { "82" } %>                 <%# the content is the trigger, dotted underline %>
 <%= explain_term("spot.score", icon: true) { "82" } %>     <%# content plain, small "?" button after it %>
 <%= explain_term("common.score_band", bands: :score) %>    <%# popover also lists bands[:score] %>
+<%= explain_term("common.units", page: false) { "m" } %>    <%# chrome (nav, switches): popover yes, page help list no %>
 
 <%= explain_page_help class: "my-nav-button" %>             <%# nav "?": hidden until the page has terms, unseen dot %>
+<%= explain_page_help data: {action: "click->sheet#close"} %> <%# a second entry point (e.g. a phone sheet): extra data attributes %>
 <%= explain_mount %>                                        <%# once, at the end of <body> in every layout %>
 ```
 
@@ -86,7 +88,9 @@ nodePaths: [path.join(process.cwd(), "node_modules")]   // the gem sits outside 
 ```
 
 Vitest needs the same `resolve.alias`. Hosts that render markup in JavaScript import
-`explainTrigger(key, text)` / `explainTriggerHTML(key, escapedHtml)` from `explain_kit/trigger`.
+`explainTrigger(key, text, { bands, icon, label })` / `explainTriggerHTML(key, escapedHtml, options)` from
+`explain_kit/trigger`. `icon: true` keeps the text plain and appends a "?" button; pass `label` ("What is Score?")
+as its accessible name.
 
 ```js
 // app/javascript/controllers/explain_controller.js
@@ -103,6 +107,9 @@ Seen terms persist in `localStorage` (`explain_kit:seen`). Override with
 Behaviour: Enter or tap opens, Escape closes and returns focus to the trigger, focus moves into the dialog
 and is trapped while open, targets are at least 44px, `prefers-reduced-motion` turns animations off. Terms
 inside lazy Turbo frames are not embedded in the page, the controller fetches them from `glossary_path`.
+The desktop popover opens below its trigger, flips above it when there is more room there, and shrinks (and
+scrolls) when neither side fits; it never covers the trigger. The page-help panel lists a term whose trigger is
+not on screen (hidden tab, JS-revealed block) disabled, with a "not visible right now" hint, so there is no dead tap.
 
 ## Surfaces, tours and lazy content
 
