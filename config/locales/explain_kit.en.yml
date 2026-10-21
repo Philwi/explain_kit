@@ -1,0 +1,12 @@
+en:
+  explain_kit:
+    ui:
+      explain: "What is %{title}?"
+      explain_hint: ", explanation: %{title}"
+      page_help: "Explain this page"
+      page_help_title: "On this page"
+      page_help_intro: "Tap a term to jump to it."
+      close: "Close"
+      how: "How it works"
+      more: "Read more"
+      bands: "Bands"

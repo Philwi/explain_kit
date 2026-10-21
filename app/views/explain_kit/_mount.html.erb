@@ -1,0 +1,28 @@
+<div class="explain-kit" lang="<%= locale %>" data-controller="explain"
+     data-explain-glossary-url-value="<%= ExplainKit.config.glossary_path %>?locale=<%= locale %>"
+     data-explain-popover-id-value="<%= ExplainKit::ViewHelper::POPOVER_ID %>">
+  <script type="application/json" data-explain-target="data"><%= raw json_escape(payload.to_json) %></script>
+  <div class="explain-backdrop" data-explain-target="backdrop" hidden></div>
+
+  <section id="<%= ExplainKit::ViewHelper::POPOVER_ID %>" class="explain-pop" role="dialog" aria-labelledby="explain-pop-title"
+           tabindex="-1" hidden data-explain-target="popover">
+    <button type="button" class="explain-close" data-explain-close aria-label="<%= t("explain_kit.ui.close") %>"><span aria-hidden="true">&times;</span></button>
+    <h2 id="explain-pop-title" class="explain-pop__title" data-explain-target="title"></h2>
+    <p class="explain-pop__short" data-explain-target="short"></p>
+    <p class="explain-pop__long" data-explain-target="long" hidden></p>
+    <div class="explain-pop__how" data-explain-target="how" hidden>
+      <h3 class="explain-pop__label"><%= t("explain_kit.ui.how") %></h3>
+      <p data-explain-target="howText"></p>
+    </div>
+    <ol class="explain-bands" data-explain-target="bands" hidden></ol>
+    <a class="explain-pop__more" data-explain-target="more" hidden><%= t("explain_kit.ui.more") %></a>
+  </section>
+
+  <aside id="<%= ExplainKit::ViewHelper::PANEL_ID %>" class="explain-panel" role="dialog" aria-labelledby="explain-panel-title"
+         tabindex="-1" hidden data-explain-target="panel">
+    <button type="button" class="explain-close" data-explain-close aria-label="<%= t("explain_kit.ui.close") %>"><span aria-hidden="true">&times;</span></button>
+    <h2 id="explain-panel-title" class="explain-pop__title"><%= t("explain_kit.ui.page_help_title") %></h2>
+    <p class="explain-pop__short"><%= t("explain_kit.ui.page_help_intro") %></p>
+    <ul class="explain-list" data-explain-target="list"></ul>
+  </aside>
+</div>

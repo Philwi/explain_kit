@@ -1,0 +1,12 @@
+de:
+  explain_kit:
+    ui:
+      explain: "Was ist %{title}?"
+      explain_hint: ", Erklärung: %{title}"
+      page_help: "Diese Seite erklären"
+      page_help_title: "Auf dieser Seite"
+      page_help_intro: "Tippe einen Begriff an, dann springe ich hin."
+      close: "Schließen"
+      how: "So funktioniert es"
+      more: "Mehr lesen"
+      bands: "Stufen"

@@ -1,0 +1,135 @@
+/* ExplainKit: structural CSS only. Theme it with the custom properties below,
+   or override the classes. Nothing here knows a colour palette. */
+
+.explain-kit {
+  --explain-bg: #fff;
+  --explain-fg: #0f172a;
+  --explain-muted: #475569;
+  --explain-border: rgb(15 23 42 / 0.14);
+  --explain-accent: #0e7490;
+  --explain-radius: 14px;
+  --explain-shadow: 0 12px 32px rgb(15 23 42 / 0.22);
+  --explain-backdrop: rgb(15 23 42 / 0.35);
+  --explain-z: 1000;
+  --explain-width: 22rem;
+  --explain-font: inherit;
+}
+
+.explain-kit [hidden] { display: none !important; }
+
+/* Trigger: the content itself (wrap) or a "?" next to it (icon). */
+.explain-term { position: relative; }
+button.explain-term {
+  all: unset;
+  position: relative;
+  display: inline;
+  cursor: help;
+  border-bottom: 1px dotted var(--explain-underline, currentColor);
+}
+button.explain-term:focus-visible,
+.explain-term__trigger:focus-visible { outline: 2px solid var(--explain-accent); outline-offset: 2px; border-radius: 4px; }
+/* 44px hit area without growing the visual box */
+button.explain-term::after,
+.explain-term__trigger::after { content: ""; position: absolute; inset: -12px -6px; }
+.explain-term__trigger {
+  all: unset;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15em;
+  height: 1.15em;
+  margin-inline-start: 0.3em;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.75em;
+  font-weight: 600;
+  line-height: 1;
+  cursor: help;
+  opacity: 0.7;
+}
+.explain-term__trigger:hover { opacity: 1; }
+.explain-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.explain-highlight { animation: explain-pulse 2.2s ease-out; border-radius: 6px; }
+@keyframes explain-pulse {
+  0%, 60% { box-shadow: 0 0 0 4px var(--explain-accent); }
+  100% { box-shadow: 0 0 0 4px transparent; }
+}
+
+/* Nav "?" and its unseen dot. Size and colour come from the host. */
+.explain-page-help { position: relative; min-width: 44px; min-height: 44px; cursor: pointer; }
+.explain-dot {
+  position: absolute; top: 8px; inset-inline-end: 8px;
+  width: 8px; height: 8px; border-radius: 999px;
+  background: var(--explain-accent);
+}
+
+/* Popover (desktop) and panel */
+.explain-backdrop { position: fixed; inset: 0; z-index: var(--explain-z); background: var(--explain-backdrop); }
+.explain-pop, .explain-panel {
+  position: absolute;
+  z-index: calc(var(--explain-z) + 1);
+  box-sizing: border-box;
+  width: min(var(--explain-width), calc(100vw - 16px));
+  max-height: min(70vh, 32rem);
+  overflow: auto;
+  padding: 1rem 1.1rem 1.1rem;
+  color: var(--explain-fg);
+  background: var(--explain-bg);
+  border: 1px solid var(--explain-border);
+  border-radius: var(--explain-radius);
+  box-shadow: var(--explain-shadow);
+  font-family: var(--explain-font);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  opacity: 0;
+  transition: opacity 0.15s ease-out, transform 0.18s ease-out;
+}
+.explain-pop.is-open, .explain-panel.is-open { opacity: 1; }
+.explain-pop:focus, .explain-panel:focus { outline: none; }
+@media (min-width: 640px) {
+  .explain-backdrop { background: transparent; }
+  .explain-panel { position: fixed; top: 4.5rem; right: 1rem; }
+}
+/* Bottom sheet on the phone */
+@media (max-width: 639px) {
+  .explain-pop, .explain-panel {
+    position: fixed; inset: auto 0 0 0;
+    width: auto; max-height: 75vh;
+    border-radius: var(--explain-radius) var(--explain-radius) 0 0;
+    padding-bottom: calc(1.1rem + env(safe-area-inset-bottom));
+    transform: translateY(1.5rem);
+  }
+  .explain-pop.is-open, .explain-panel.is-open { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .explain-pop, .explain-panel { transition: none; transform: none !important; }
+  .explain-highlight { animation: none; box-shadow: 0 0 0 4px var(--explain-accent); }
+}
+
+.explain-close {
+  all: unset; box-sizing: border-box; position: absolute; top: 0.25rem; inset-inline-end: 0.25rem;
+  display: grid; place-items: center; width: 44px; height: 44px;
+  font-size: 1.5rem; line-height: 1; color: var(--explain-muted); cursor: pointer;
+}
+.explain-close:focus-visible, .explain-list__item:focus-visible, .explain-pop__more:focus-visible { outline: 2px solid var(--explain-accent); outline-offset: 2px; }
+
+.explain-pop__title { margin: 0 2.5rem 0.35rem 0; font-size: 1.05rem; font-weight: 700; line-height: 1.25; }
+.explain-pop__short { margin: 0 0 0.6rem; font-weight: 500; }
+.explain-pop__long, .explain-pop__how p { margin: 0 0 0.6rem; color: var(--explain-muted); }
+.explain-pop__label { margin: 0.6rem 0 0.2rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--explain-muted); }
+.explain-pop__more { color: var(--explain-accent); font-weight: 600; text-underline-offset: 3px; }
+
+.explain-bands { list-style: none; margin: 0.4rem 0 0.8rem; padding: 0; display: grid; gap: 0.25rem; }
+.explain-bands__item { display: flex; gap: 0.6rem; align-items: baseline; padding-inline-start: 0.6rem; border-inline-start: 4px solid var(--explain-band, var(--explain-border)); }
+.explain-bands__min { min-width: 2.2rem; font-variant-numeric: tabular-nums; font-weight: 700; }
+
+.explain-list { list-style: none; margin: 0.4rem 0 0; padding: 0; display: grid; gap: 0.25rem; }
+.explain-list__item {
+  all: unset; box-sizing: border-box; display: block; width: 100%; min-height: 44px; padding: 0.55rem 0.6rem;
+  border-radius: 10px; cursor: pointer;
+}
+.explain-list__item:hover { background: var(--explain-border); }
+.explain-list__title { display: block; }
+.explain-list__short { display: block; color: var(--explain-muted); font-size: 0.8rem; }
