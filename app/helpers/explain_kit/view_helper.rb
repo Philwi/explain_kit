@@ -40,6 +40,7 @@ module ExplainKit
 
     # The nav "?" button. Hidden until the page carries at least one explain_term.
     def explain_page_help(class: nil, label: nil, &block)
+      @_explain_mount_wanted = true
       extra = binding.local_variable_get(:class)
       label ||= I18n.t("explain_kit.ui.page_help")
       tag.button(type: "button", hidden: true, class: ["explain-page-help", extra],
@@ -51,10 +52,16 @@ module ExplainKit
       end
     end
 
+    # Embed terms that JavaScript renders (so the popover needs no request for them).
+    def explain_preload(*keys)
+      explain_keys.merge(keys.flatten.map(&:to_s))
+      nil
+    end
+
     # Once per page, at the end of <body>: the shared popover/sheet and the page-help panel.
-    # Renders nothing when no explain_term was used on the page.
+    # Renders nothing when the page used no explain_term and has no page-help button.
     def explain_mount
-      return if explain_keys.empty?
+      return if explain_keys.empty? && !@_explain_mount_wanted
 
       locale = I18n.locale
       terms = Glossary.terms(locale).slice(*explain_keys.to_a)

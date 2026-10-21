@@ -1,7 +1,11 @@
 /* ExplainKit: structural CSS only. Theme it with the custom properties below,
-   or override the classes. Nothing here knows a colour palette. */
+   or override the classes. Nothing here knows a colour palette. The defaults
+   sit in :where() (specificity 0), so any host rule on .explain-kit wins no
+   matter which stylesheet loads last. Per surface: put data-explain-theme="x"
+   on the page wrapper; the popover then carries data-theme="x" while it is
+   open for a term inside it. */
 
-.explain-kit {
+:where(.explain-kit) {
   --explain-bg: #fff;
   --explain-fg: #0f172a;
   --explain-muted: #475569;

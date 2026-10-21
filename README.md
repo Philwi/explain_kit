@@ -81,9 +81,13 @@ that imports `@hotwired/stimulus` from the host. Wire it without copying:
 // esbuild config: resolve "explain_kit/*" to the gem's JS directory
 import { execSync } from "child_process"
 const explainKit = execSync("bundle info explain_kit --path", { encoding: "utf8" }).trim() + "/app/javascript"
-// esbuild option:
-alias: { explain_kit: path.join(explainKit, "explain_kit") }
+// esbuild options:
+alias: { explain_kit: path.join(explainKit, "explain_kit") },
+nodePaths: [path.join(process.cwd(), "node_modules")]   // the gem sits outside your tree: its `@hotwired/stimulus` import resolves here
 ```
+
+Vitest needs the same `resolve.alias`. Hosts that render markup in JavaScript import
+`explainTrigger(key, text)` / `explainTriggerHTML(key, escapedHtml)` from `explain_kit/trigger`.
 
 ```js
 // app/javascript/controllers/explain_controller.js
@@ -100,6 +104,18 @@ Seen terms persist in `localStorage` (`explain_kit:seen`). Override with
 Behaviour: Enter or tap opens, Escape closes and returns focus to the trigger, focus moves into the dialog
 and is trapped while open, targets are at least 44px, `prefers-reduced-motion` turns animations off. Terms
 inside lazy Turbo frames are not embedded in the page, the controller fetches them from `glossary_path`.
+
+## Surfaces, tours and lazy content
+
+- `data-explain-theme="x"` on a page wrapper: while a term inside it is open, `.explain-kit` carries
+  `data-theme="x"`. The popover sits at the end of `<body>`, so this is how one app has several looks.
+- `data-explain-tour="Label"` on any element: it is listed first in the page-help panel, and picking it
+  clicks that element (a coach, an onboarding tour). A page with only a tour still gets the "?".
+- `explain_preload("area.term", ...)`: embed terms that JavaScript or a lazy Turbo frame renders later.
+  Everything else not embedded is fetched from `glossary_path` on first open.
+- `explain_mount` also renders when `explain_page_help` was called, so the "?" works on every page.
+- `ExplainKit::Glossary.coverage` / `.usage` back `rake explain_kit:check`, which prints terms per area and
+  keys per view file before it validates.
 
 ## API
 

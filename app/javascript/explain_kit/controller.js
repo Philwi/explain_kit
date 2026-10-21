@@ -53,11 +53,13 @@ export default class extends Controller {
     const term = target.closest("[data-explain-key]")
     const help = target.closest("[data-explain-page-help]")
     const jump = target.closest("[data-explain-jump]")
+    const tour = target.closest("[data-explain-tour-start]")
     const close = target.closest("[data-explain-close]")
 
     if (term) return this.consume(event, () => this.openTerm(term))
     if (help) return this.consume(event, () => this.togglePanel(help))
     if (jump) return this.consume(event, () => this.jumpTo(jump.dataset.explainJump))
+    if (tour) return this.consume(event, () => this.startTour(Number(tour.dataset.explainTourStart)))
     if (close || target === this.backdropTarget) return this.closeAll({ restoreFocus: true })
     if (!target.closest(".explain-pop, .explain-panel")) this.closeAll({ restoreFocus: false })
   }
@@ -89,10 +91,18 @@ export default class extends Controller {
     this.closeAll({ restoreFocus: false })
     this.opener = trigger
     trigger.setAttribute("aria-expanded", "true")
+    this.theme(trigger)
     this.fill(term, trigger.dataset.explainBands)
     this.show(this.popoverTarget)
     this.position(trigger)
     this.markSeen([key])
+  }
+
+  // The surface the trigger sits on decides the look: [data-explain-theme="dial"] on a wrapper.
+  theme(trigger) {
+    const surface = trigger.closest("[data-explain-theme]")
+    if (surface) this.element.dataset.theme = surface.dataset.explainTheme
+    else delete this.element.dataset.theme
   }
 
   async termFor(key) {
@@ -161,11 +171,15 @@ export default class extends Controller {
     return [...seen]
   }
 
+  // A host tour (e.g. a coach) is any element with data-explain-tour="Label". It is listed first
+  // in the panel and started by clicking that element, hidden or not.
+  tours() { return [...document.querySelectorAll("[data-explain-tour]")] }
+
   refreshPageHelp() {
     const keys = this.pageKeys()
     const unseen = keys.filter((k) => !storage().read().includes(k))
     document.querySelectorAll("[data-explain-page-help]").forEach((button) => {
-      button.hidden = keys.length === 0
+      button.hidden = keys.length === 0 && this.tours().length === 0
       const dot = button.querySelector("[data-explain-dot]")
       if (dot) dot.hidden = unseen.length === 0
     })
@@ -176,12 +190,34 @@ export default class extends Controller {
 
     this.closeAll({ restoreFocus: false })
     this.opener = button
+    this.theme(button)
     button.setAttribute("aria-expanded", "true")
     const keys = this.pageKeys()
     await Promise.all(keys.map((k) => this.termFor(k)))
-    this.listTarget.replaceChildren(...keys.filter((k) => this.terms[k]).map((k) => this.listItem(k)))
+    this.listTarget.replaceChildren(
+      ...this.tours().map((el, i) => this.tourItem(el.dataset.explainTour, i)),
+      ...keys.filter((k) => this.terms[k]).map((k) => this.listItem(k))
+    )
     this.show(this.panelTarget)
     this.markSeen(keys)
+  }
+
+  tourItem(label, index) {
+    const li = document.createElement("li")
+    const button = document.createElement("button")
+    button.type = "button"
+    button.className = "explain-list__item explain-list__item--tour"
+    button.dataset.explainTourStart = index
+    button.innerHTML = '<strong class="explain-list__title"></strong>'
+    button.firstChild.textContent = label
+    li.append(button)
+    return li
+  }
+
+  startTour(index) {
+    const el = this.tours()[index]
+    this.closeAll({ restoreFocus: false })
+    if (el) el.click()
   }
 
   listItem(key) {

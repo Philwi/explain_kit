@@ -79,6 +79,16 @@ class HelperTest < Minitest::Test
     assert_nil view.explain_mount
   end
 
+  def test_mount_renders_for_the_page_help_button_alone
+    view.explain_page_help
+    assert_includes view.explain_mount, 'data-controller="explain"'
+  end
+
+  def test_preload_embeds_terms_without_markup
+    view.explain_preload("spot.tide")
+    assert_includes view.explain_mount, "spot.tide"
+  end
+
   def test_page_help_button_starts_hidden_with_dot
     html = view.explain_page_help
     assert_includes html, "hidden"
