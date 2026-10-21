@@ -14,8 +14,7 @@ Used by BreakFinder, later LiftSync and Stirra.
 gem "explain_kit", git: "https://github.com/Philwi/explain_kit.git", branch: "main"
 ```
 
-The repo is private. Locally `gh auth setup-git` (or an SSH `git@github.com:` URL) is enough. In a Docker
-build pass a token as a build secret and set `BUNDLE_GITHUB__COM=x-access-token:<token>` for `bundle install`.
+The repo is public, so `bundle install` needs no credentials, locally or in a Docker build.
 
 ```ruby
 # config/initializers/explain_kit.rb
