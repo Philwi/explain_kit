@@ -112,3 +112,41 @@ class HelperTest < Minitest::Test
     assert_includes html, "data-explain-dot"
   end
 end
+
+class LocaleResolutionTest < Minitest::Test
+  def setup
+    @saved = I18n.available_locales
+    I18n.available_locales = %i[de en pt pt_BR]
+  end
+
+  def teardown
+    I18n.available_locales = @saved
+  end
+
+  def resolve(raw) = ExplainKit::GlossaryEndpoint.resolve_locale(raw)
+
+  def test_bcp47_tag_matches_underscore_locale
+    assert_equal :pt_BR, resolve("pt-BR")
+  end
+
+  def test_underscore_and_any_casing_match
+    assert_equal :pt_BR, resolve("pt_BR")
+    assert_equal :pt_BR, resolve("pt_br")
+    assert_equal :pt_BR, resolve("PT-br")
+  end
+
+  def test_exact_plain_locale_matches
+    assert_equal :de, resolve("de")
+  end
+
+  def test_unavailable_region_falls_back_to_language_part
+    assert_equal :de, resolve("de-AT")
+    assert_equal :pt, resolve("pt-PT")
+  end
+
+  def test_unknown_blank_or_nil_fall_back_to_default
+    assert_equal :en, resolve("xx-YY")
+    assert_equal :en, resolve("")
+    assert_equal :en, resolve(nil)
+  end
+end
